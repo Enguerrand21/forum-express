@@ -22,11 +22,91 @@
             id="pseudo"
             minlength="3"
             maxlength="30"
+            required
             >
 
         </div>
-    </form>
 
+        <div class="mb-4">
+            <label for="email" class="f-label mb-2">Votre email</label>
+            <input 
+            type="email" 
+            class="f-input"
+            name="email"
+            id="email"
+            maxlength="254"
+            autocomplete="email"
+            required
+            >
+        </div>
+
+        <div class="mb-4">
+            <label for="password" class="f-label mb-0">Votre mot de passe</label>
+            <p class="text-sm mb-4">6 caractères min, et au moins un chiffre et un symbole</p>
+            <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="new-password"
+            class="f-input"
+            required
+            minlength="6"
+            maxlength="72"
+            pattern="^(?=.*[0-9])(?=.*[^A-Za-z0-9]).{6,72}$"
+            >
+        </div>
+        <div class="mb-4">
+            <label for="repeatedPassword" class="f-label mb-2">Répéter votre mot de passe</label>
+            <input 
+            id="repeatedPassword"
+            type="password" 
+            name="repeatedPassword"
+            class="f-input"
+            required
+            >
+        </div>
+
+        <button class="c-btn w-full mb-5">Créer un compte</button>
+        <p class="js-server-info text-lg"></p>
+    </form>
+    <script>
+        const signupForm = document.querySelector(".js-signup-form")
+        const serverInfo = document.querySelector(".js-server-info")
+
+        signupForm.addEventListener("submit", handleSignupSubmit)
+
+        async function handleSignupSubmit(e){
+            e.preventDefault()
+            const formData = new FormData(e.currentTarget)
+            serverInfo.textContent = ""
+            if (formData.get("password") !== formData.get("repeatedPassword")) {
+                serverInfo.textContent = "Le mot de passe et la répétition du mot de passe doivent être identiques."
+                return
+            }
+            try {
+                const response = await fetch("/api/auth/signup", {
+                    method: "POST",
+                    body: JSON.stringify(Object.fromEntries(formData.entries())),
+                    headers: {"content-Type" : "application/json"}
+                })
+                console.log("Response", response)
+                const responseData = await response.json()
+                console.log("Response data", responseData)
+                if(!response.ok) {
+                    if(responseData.showToUser) {
+                        throw new Error(responseData.error);                        
+                    } else {
+                        throw new Error("Erreur, contactez-le site ou réésayez plus tard");
+                        
+                    }
+                }
+                serverInfo.textContent = "Bravo, inscription réussie ! Connectez vous pour accèder à votre compte"
+                
+            } catch (error) {
+                serverInfo.textContent = error.message
+            }
+        }
+    </script>
 
 
 </body>
