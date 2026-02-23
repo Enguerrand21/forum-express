@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body class="pt-40">
+    <%- include("../partials/navbar") %>
+
+    <form class="js-signin-form max-w-md mx-auto p-8 border border-gray-400 rounded pb-10">
+        <p class="text-2xl text-center mb-8">connexion</p>
+
+        <div class="mb-4">
+            <label for="email" class="f-label mb-2">Votre email</label>
+            <input
+            id="email"
+            autocomplete="email"
+            type="email"
+            name="email"
+            class="f-input w-full"
+            required
+            maxlength="254"
+            >
+        </div>
+        <div class="mb-14">
+            <label for="password" class="f-label mb-2">Votre mot de passe</label>
+            <input
+            id="password"
+            autocomplete="current-password"
+            type="password"
+            name="password"
+            class="f-input w-full"
+            required
+            minlength="6"
+            maxlength="72"
+            >
+        </div>
+        <button class="c-btn w-full mb-5">Se connecter</button>
+        <p class="js-server-info"></p>
+    </form>
+    <script>
+        const signInForm = document.querySelector(".js-signin-form")
+        const serverInfo = document.querySelector(".js-server-info")
+
+        signInForm.addEventListener("submit", handleSigninSubmit)
+
+        async function handleSigninSubmit(e) {
+            e.preventDefault()
+
+            serverInfo.textContent = ""
+            const formData = new FormData(e.currentTarget)
+
+            try {
+
+                const response = await fetch("/api/auth/signin", {
+                    method: "POST",
+                    body: JSON.stringify(Object.fromEntries(formData.entries())),
+                    headers: {"Content-Type": "application/json"}
+                })
+
+                console.log("response: response")
+                const responseData = await response.json()
+                console.log("responseData", responseData)
+
+                if(!response.ok) {
+                    if(responseData.showToUser) {
+                        throw new Error("responseData.error")
+                    } else {
+                        throw new Error("Erreur, contactez-le site ou réésayez plus tard.");
+                        
+                    }
+                }
+                redirectAfterSignin()    
+                
+            } catch(error) {
+                serverInfo.textContent = error.message
+            }
+        
+            function redirectAfterSignin() {
+                let timer = 3
+                serverInfo.textContent = `Connexion réussie ! Redirection vers l'accueil dans ${timer}s`
+                const intervalId = setInterval(() => {
+                    if(timer === 1) {
+                        clearInterval(intervalId)
+                        window.location.href= "/"
+                    } else {
+                        timer--
+                        serverInfo.textContent = `Connexion réussie ! Redirection vers l'accueil dans ${timer}s`
+                    }
+                }, 1000)
+            }
+
+        }
+    </script>
+</body>
+</html>
